@@ -1,0 +1,248 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+```{r}
+hotel_df=read.csv("C:/Users/ACER/Downloads/hotels.csv")
+hotel_df
+
+#data structure
+str(hotel_df)
+
+#summary 
+summary(hotel_df)
+head(hotel_df)
+
+dim(hotel_df)
+```
+```{r}
+total_na<- sum(is.na(hotel_df))
+total_na
+
+count_na_per_col<- colSums(is.na(hotel_df))
+count_na_per_col
+
+cat("TOTAL NA VALUES IN THE ENTITRE DATA FRAME:",total_na,"\n")
+cat("NA VALUES PER COLUMN:",count_na_per_col,"\n")
+print(count_na_per_col)
+
+
+# REMOVING NA VALUES
+hotel_df<- na.omit(hotel_df)
+
+sum(is.na(hotel_df))
+```
+
+```{r, VISUALIZATION}
+library(ggplot2)
+
+# bar plot 
+ggplot(hotel_df,aes(x=reservation_status ,fill=hotel))+geom_bar(position = "dodge")+ labs(title = "Reservation Status",y="Count")
+
+# scatter plot - Lead Time vs. Average Daily Rate
+ggplot(hotel_df, aes(x = lead_time, y = adr, color = hotel)) +
+  geom_point(alpha = 0.5) +
+  labs(title = "Lead Time vs. Average Daily Rate",
+       x = "Lead Time",
+       y = "Average Daily Rate",
+       color = "Hotel Type") +
+  theme_minimal()
+```
+```{r}
+library(dplyr)
+install.packages(c("tidyverse","forecast"))
+library(tidyverse)
+library(forecast)
+ 
+
+```
+
+
+
+
+```{r}
+# sample a subset of the dataset
+sample_size<- 1000
+hotel_data_sample<- hotel_df%>%sample_n(sample_size)
+theme_set(theme_minimal())
+
+# Create a histogram with distribution plot for lead time
+ggplot(hotel_data_sample, aes(x = lead_time)) +
+  geom_histogram(aes(y = ..density..), binwidth = 10, fill = "red", color = "green",
+                 alpha = 0.7) +
+  geom_density(color = "blue") +
+  
+  labs(title = "Hotel Booking Lead Time Distribution with Distribution Plot",
+       x = "Lead Time (days)",
+       y = "Density") +
+  
+  theme(panel.grid.major = element_line(color = "gray", linetype = "dashed",size = 0.2),
+        panel.grid.minor = element_blank(),
+        panel.background = element_rect(fill = "white"),
+        legend.position = "none") +
+  
+  scale_x_continuous(breaks = seq(0, max(hotel_data_sample$lead_time), by = 20))
+
+
+
+# create a box plot to visualize outliers in "lead time " column
+
+ggplot(hotel_df, aes(x = 1, y = lead_time)) +
+  geom_boxplot(fill = "skyblue", color = "black") +
+  labs(title = "Boxplot of Lead Time (Outlier Detection)",
+       x = "",
+       y = "Lead Time") +
+  theme_minimal()
+
+# Visualization Monthly Booking Trends
+hotel_df %>%
+  mutate(arrival_date_month = factor(arrival_date_month, levels = month.name)) %>%
+  ggplot(aes(x = arrival_date_month, fill = hotel)) +
+  geom_bar(position = "dodge", stat = "count") +
+  labs(title = "Monthly Booking Trends",
+       x = "Month",
+       y = "Number of Bookings",
+       fill = "Hotel Type") +
+  theme_minimal()
+
+# Visualization Average Daily Rate (ADR) Distribution
+ggplot(hotel_df, aes(x = adr, fill = hotel)) +
+  geom_density(alpha = 0.7) +
+  labs(title = "ADR Distribution by Hotel Type",
+       x = "ADR",
+       y = "Density",
+       fill = "Hotel Type") +
+  theme_minimal()
+
+
+# Visualization  Market Segment Distribution
+hotel_df %>%
+  ggplot(aes(x = market_segment, fill = hotel)) +
+  geom_bar(position = "dodge", stat = "count") +
+  labs(title = "Distribution of Bookings by Market Segment",
+       x = "Market Segment",
+       y = "Number of Bookings",
+       fill = "Hotel Type") +
+  theme_minimal()
+
+```
+```{r}
+# Visualization: Most Preferred Hotel
+ hotel_df %>%
+  ggplot(aes(x = hotel, fill = hotel)) +
+  geom_bar(stat = "count", color = "white", size = 0.7) + 
+  labs(title = "Distribution of Bookings by Hotel Type",
+       x = "Hotel Type",
+       y = "Number of Bookings",
+       fill = "Hotel Type") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),  
+        plot.title = element_text(size = 16, hjust = 0.5, face = "bold"), 
+        legend.title = element_text(face = "italic"),  # Make legend title italic
+        legend.position = "top",  # Position legend at the top
+        panel.grid.major = element_line(colour = "lightgray", linetype = "dashed")) 
+
+# Visualization: Cancellation Patterns
+hotel_df %>%
+  ggplot(aes(x = hotel, fill = as.factor(is_canceled))) +
+  geom_bar(stat = "count", position = "stack") +
+  labs(title = "Cancellation Patterns by Hotel Type",
+       x = "Hotel Type",
+       y = "Number of Bookings",
+       fill = "Cancellation Status") +
+  theme_minimal()
+
+
+```
+
+```{r}
+# Visualization: Booking Distribution by Month
+hotel_df %>%
+  ggplot(aes(x = arrival_date_month, fill = hotel)) +
+  geom_bar(stat = "count", position = "stack") +
+  labs(title = "Booking Distribution by Month",
+       x = "Month",
+       y = "Number of Bookings",
+       fill = "Hotel Type") +
+  theme_minimal() +
+  scale_x_discrete(labels = function(x) formatC(as.numeric(x), width = 2, flag = "0"))
+
+# Create a barplot for customer type distribution
+ggplot(hotel_df, aes(x = customer_type, fill = customer_type)) +
+  geom_bar() +
+  labs(title = "Distribution of Bookings by Customer Type",
+       x = "Customer Type",
+       y = "Number of Bookings") +
+  theme_minimal()
+
+
+```
+```{r}
+# Create a barplot for booking distribution by channels
+ggplot(hotel_df, aes(x = distribution_channel, fill = distribution_channel)) +
+  geom_bar() +
+  labs(title = "Distribution of Bookings by Booking Channels",
+       x = "Booking Channels",
+       y = "Number of Bookings") +
+  theme_minimal()
+
+```
+```{r}
+
+# Select numeric columns for correlation heatmap
+numeric_columns <- hotel_df[, sapply(hotel_df, is.numeric)]
+
+# Calculate the correlation matrix
+correlation_matrix <- cor(numeric_columns)
+
+# Convert correlation matrix to dataframe
+correlation_df <- as.data.frame(as.table(correlation_matrix))
+
+# Filter out diagonal values
+correlation_df <- correlation_df[correlation_df$Var1 != correlation_df$Var2, ]
+
+# Plot the heatmap
+ggplot(data = correlation_df, aes(x = Var1, y = Var2, fill = Freq)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  theme_minimal() +
+  labs(title = "Correlation Heatmap of Numeric Columns",
+       x = "Variables",
+       y = "Variables",
+       fill = "Correlation")
+
+
+# Create a barplot for weekday vs. weekend bookings
+hotel_df %>%
+  mutate(booking_day_type = ifelse(stays_in_weekend_nights >0,"Weekend","Weekday"))%>%
+  ggplot(aes(x = booking_day_type, fill = booking_day_type)) +
+  geom_bar() +
+  labs(title = "Distribution of Bookings between Weekdays and Weekends",
+       x = "Day Type",
+       y = "Number of Bookings") +
+  theme_minimal()
+
+
+```
+```{r}
+install.packages("skimr")
+library(skimr)
+```
+```{r}
+
+```
+

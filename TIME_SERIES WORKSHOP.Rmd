@@ -1,0 +1,219 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+
+Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
+
+```{r}
+plot(cars)
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Ctrl+Shift+K* to preview the HTML file).
+
+The preview shows you a rendered HTML copy of the contents of the editor. Consequently, unlike *Knit*, *Preview* does not run any R code chunks. Instead, the output of the chunk when it was last run in the editor is displayed.
+
+
+```{r}
+rbinom(1,1,0.5)
+```
+```{r}
+rbinom(10,1,0.5)
+```
+```{r}
+rbinom(10,10,0.5)
+```
+
+
+```{r}
+# use the rbinom function for stimiulate 100 separete 
+
+rbinom(10,100,0.3)
+```
+
+
+```{r}
+
+# finding density with stimulation
+rbinom(100000,10,0.5) -> data
+
+hist(data)
+
+data==5
+mean(data==5) # density of the binomal at the point 5
+
+# finding the density without stimulation : using dbinom
+dbinom(5,10,0.5) -> pmf
+pmf
+
+n<- 50
+p<- 0.5
+x<- 0:n
+
+
+
+rbinom(100,10,0.5)-> data_1
+mean(data_1<=4)
+
+  
+```
+
+
+```{r}
+pbinom(4,10,0.5)
+
+```
+
+
+```{r}
+# 1 
+rbinom(10000,10,0.3)-> df
+mean(df==2)
+
+pbinom(4,10,0.3)
+
+mean(rbinom(10000,10,0.3)==2)
+
+
+
+```
+```{r}
+a=rbinom(100000,1,0.5)
+b=rbinom(100000,1,0.5)
+mean(a|b)
+
+hist(rbinom(100000,10,0.5))
+hist(rbinom(100000,1000,0.5))
+
+```
+
+
+
+
+```{r}
+
+rbinom(10000,1000,0.5)-> binomial
+1000*0.5 -> expected_value
+1000*0.5*0.5 -> variance
+sqrt(variance)-> std
+
+rnorm(100000,expected_value,std)
+
+hist(rnorm(100000,expected_value,std))
+```
+```{r}
+install.packages("datasets")
+install.packages("ggplot2")
+library(ggplot2)
+library(datasets)
+
+```
+```{r}
+AirPassengers
+str(AirPassengers)
+
+start(AirPassengers)
+end(AirPassengers)
+
+frequency(AirPassengers)
+```
+
+
+```{r}
+install.packages("astsa")
+library(astsa)
+
+
+```
+```{r}
+??astsa
+jj
+# to tranform times seriss into usine comman "ts"
+plot(jj,type="o")
+str(jj)
+plot(flu)
+??flu
+
+??star
+plot(star)
+
+```
+
+
+```{r}
+data=rnorm(100)
+data
+str(data)
+
+data2=ts(rnorm(100))
+str(data2)
+
+#autocovarinace  function
+(acf(data2,type = "covariance"))
+(acf(jj,type = "covariance"))
+
+(acf(flu,type = "covariance"))
+
+
+```
+
+```{r}
+set.seed(456)
+
+n<- 100
+x0<- 0
+
+epsilon<- rnorm(n,mean = 0,sd=1)
+epsilon
+
+# initiallize the random walk
+random_walk=numeric(n)
+random_walk[1]<- x0
+
+# stimulatte the random walk
+for (t in 2:n){
+  random_walk[t]<- random_walk[t-1]+epsilon[t]
+}
+
+#plot the random walk
+plot(random_walk,type="l",col="blue",lwd=2,main="simple random walk", xlab="time",ylab="value")
+diff(random_walk)-> t
+plot(t)
+
+
+```
+```{r}
+acf(t)
+```
+```{r}
+library(tseries)
+library(forecast)
+```
+
+
+```{r}
+acf(AirPassengers)
+adf_test= adf.test(AirPassengers)
+adf_test
+
+# to make statinary
+diff_airpass=diff(AirPassengers)
+diff_airpass
+plot(diff_airpass,main="first difference air_passenger",xlab="time",ylab="value")
+acf(diff_airpass)
+diff_2=diff(diff_airpass)
+diff_2
+
+arima_model=auto.arima(AirPassengers)
+print(summary(arima_model))
+
+checkresiduals(arima_model)
+
+forecasted= forecast(arima_model,h=24)
+forecasted
+```
+
